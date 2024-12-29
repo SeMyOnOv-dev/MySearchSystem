@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stark-Style Search Interface</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            color: #00FFFF;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            position: relative;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00FFFF;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+            width: 70%;
+            max-width: 800px;
+        }
+
+        .search-bar input {
+            background: none;
+            border: none;
+            color: #00FFFF;
+            outline: none;
+            font-size: 20px;
+            width: 90%;
+        }
+
+        .search-bar button {
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00FFFF;
+            border-radius: 5px;
+            color: #00FFFF;
+            font-size: 18px;
+            padding: 5px 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .search-bar button:hover {
+            background: rgba(0, 255, 255, 0.5);
+        }
+
+        .results-container {
+            margin-top: 20px;
+            width: 80%;
+            max-height: 60%;
+            overflow-y: auto;
+            background: rgba(0, 255, 255, 0.05);
+            border: 1px solid #00FFFF;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+            padding: 15px;
+        }
+
+        .result-item {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0, 255, 255, 0.1);
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+        }
+
+        .result-item:hover {
+            background: rgba(0, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="search-bar">
+            <input type="text" id="search-query" placeholder="Введите ваш запрос...">
+            <button id="search-button">Поиск</button>
+        </div>
+        <div class="results-container" id="results-container">
+            <div class="result-item">Результаты поиска появятся здесь...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'AIzaSyBJeEiG84hpjbWjDIVJJx7ttEB0RMWwNHE';
+        const CX = '900d00c54377e4edf';
+
+        document.getElementById('search-button').addEventListener('click', () => {
+            const query = document.getElementById('search-query').value;
+            const resultsContainer = document.getElementById('results-container');
+            resultsContainer.innerHTML = ''; // Очищаем предыдущие результаты
+
+            if (!query) {
+                const errorItem = document.createElement('div');
+                errorItem.className = 'result-item';
+                errorItem.textContent = 'Введите запрос!';
+                resultsContainer.appendChild(errorItem);
+                return;
+            }
+
+            fetch(`https://www.googleapis.com/customsearch/v1?key=${API_KEY}&cx=${CX}&q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.items && data.items.length > 0) {
+                        data.items.forEach(item => {
+                            const resultItem = document.createElement('div');
+                            resultItem.className = 'result-item';
+                            resultItem.innerHTML = `
+                                <h3><a href="${item.link}" target="_blank">${item.title}</a></h3>
+                                <p>${item.snippet}</p>
+                            `;
+                            resultsContainer.appendChild(resultItem);
+                        });
+                    } else {
+                        const noResultsItem = document.createElement('div');
+                        noResultsItem.className = 'result-item';
+                        noResultsItem.textContent = 'Результатов не найдено.';
+                        resultsContainer.appendChild(noResultsItem);
+                    }
+                })
+                .catch(error => {
+                    const errorItem = document.createElement('div');
+                    errorItem.className = 'result-item';
+                    errorItem.textContent = 'Произошла ошибка при выполнении запроса.';
+                    resultsContainer.appendChild(errorItem);
+                    console.error(error);
+                });
+        });
+    </script>
+</body>
+</html>
